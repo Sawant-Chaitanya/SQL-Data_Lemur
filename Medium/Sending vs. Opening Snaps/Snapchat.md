@@ -57,3 +57,27 @@ GROUP BY
     age_bucket;
 
 ```
+
+```SQL
+---using filter clause in PostgreSQL
+
+-- Selecting age bucket, percentage of time spent sending snaps, and percentage of time spent opening snaps
+SELECT 
+  age.age_bucket, 
+  -- Calculating the percentage of time spent sending snaps
+  ROUND(100.0 * 
+    SUM(activities.time_spent) FILTER (WHERE activities.activity_type = 'send') /
+      SUM(activities.time_spent), 2) AS send_perc, 
+  -- Calculating the percentage of time spent opening snaps
+  ROUND(100.0 * 
+    SUM(activities.time_spent) FILTER (WHERE activities.activity_type = 'open') /
+      SUM(activities.time_spent), 2) AS open_perc
+FROM activities
+-- Joining with the age_breakdown table based on user_id
+INNER JOIN age_breakdown AS age ON activities.user_id = age.user_id 
+-- Filtering rows to include only 'send' and 'open' activity types
+WHERE activities.activity_type IN ('send', 'open') 
+-- Grouping the results by age bucket
+GROUP BY age.age_bucket;
+
+```
